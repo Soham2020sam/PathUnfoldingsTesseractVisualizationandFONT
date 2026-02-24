@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tesseract Unfolding Visualizer</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <h1>Tesseract Unfolding Visualizer</h1>
+            <p>Design and visualize 4D tesseract unfoldings</p>
+        </header>
+
+        <!-- Editor Mode -->
+        <div id="editor-mode" class="mode-container">
+            <div class="panel-container">
+                <!-- Left Panel - Grid Editor -->
+                <div class="panel editor-panel">
+                    <h2>Grid Editor</h2>
+                    <p class="instructions">Click cells to paint/unpaint. Grid auto-expands at edges.</p>
+
+                    <div id="grid-container"></div>
+
+                    <div class="button-group">
+                        <button id="clear-btn" class="btn btn-secondary">Clear Grid</button>
+                        <button id="validate-btn" class="btn btn-primary">Check Path Unfolding</button>
+                    </div>
+
+                    <div id="validation-message" class="message"></div>
+                </div>
+
+                <!-- Right Panel - Info -->
+                <div class="panel info-panel">
+                    <h2>About</h2>
+                    <div class="info-content">
+                        <h3>What is a Tesseract?</h3>
+                        <p>A tesseract is a 4D hypercube, analogous to how a cube is a 3D version of a square. Just as a cube unfolds into 6 squares, a tesseract unfolds into 24 cubes.</p>
+
+                        <h3>How to Use</h3>
+                        <ol>
+                            <li>Click cells in the grid to create your unfolding pattern</li>
+                            <li>Click "Check Path Unfolding" to validate</li>
+                            <li>If valid, click "Visualize" to see the 3D animation</li>
+                        </ol>
+
+                        <h3>Requirements</h3>
+                        <ul>
+                            <li>Must have exactly 24 cells</li>
+                            <li>Must form a valid tesseract net</li>
+                            <li>Must follow Hamiltonian path constraints</li>
+                        </ul>
+
+                        <div class="stats">
+                            <div class="stat">
+                                <span class="stat-label">Cells:</span>
+                                <span id="cell-count" class="stat-value">0</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-label">Required:</span>
+                                <span class="stat-value">24</span>
+                            </div>
+                        </div>
+
+                        <button id="visualize-btn" class="btn btn-success" disabled>
+                            Visualize Unfolding
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Visualization Mode -->
+        <div id="viz-mode" class="mode-container" style="display: none;">
+            <div class="viz-header">
+                <h2>Animation Viewer</h2>
+                <button id="back-btn" class="btn btn-secondary">← Back to Editor</button>
+            </div>
+
+            <div class="viz-container">
+                <div id="canvas-container">
+                    <canvas id="viz-canvas"></canvas>
+                </div>
+
+                <div class="viz-controls">
+                    <div class="control-group">
+                        <button id="play-pause-btn" class="btn btn-primary">Play</button>
+                        <button id="reset-btn" class="btn btn-secondary">Reset</button>
+                        <button id="labels-btn" class="btn btn-secondary">Toggle Labels</button>
+                    </div>
+
+                    <div class="control-group">
+                        <label>Animation Speed</label>
+                        <input type="range" id="speed-slider" min="1" max="50" value="10">
+                        <span id="speed-value">1.0x</span>
+                    </div>
+
+                    <div class="control-group">
+                        <label>Step: <span id="step-counter">0 / 24</span></label>
+                        <div class="progress-bar">
+                            <div id="progress-fill" class="progress-fill"></div>
+                        </div>
+                    </div>
+
+                    <div class="control-info">
+                        <p><strong>Controls:</strong></p>
+                        <ul>
+                            <li>Drag to rotate camera</li>
+                            <li>Scroll to zoom</li>
+                            <li>Space: Play/Pause</li>
+                            <li>R: Reset | L: Labels</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="tesseract-logic.js"></script>
+    <script src="visualization.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
