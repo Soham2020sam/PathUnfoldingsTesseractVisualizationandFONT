@@ -28,8 +28,31 @@ class TesseractVisualizer {
         this.unfoldingPositions = [];
         this.faceColors = [];
 
+        this.lastAddedEdges = []; // track edges of most recently added face
+
         this.tesseractVertices = this.initTesseractVertices();
         this.initScene();
+    }
+
+    // Create a cylinder between two points (thick edge that actually renders)
+    createThickEdge(p1, p2, radius, color) {
+        const a = new THREE.Vector3(...p1);
+        const b = new THREE.Vector3(...p2);
+        const dir = new THREE.Vector3().subVectors(b, a);
+        const len = dir.length();
+        const mid = new THREE.Vector3().addVectors(a, b).multiplyScalar(0.5);
+
+        const geometry = new THREE.CylinderBufferGeometry(radius, radius, len, 6, 1);
+        const material = new THREE.MeshBasicMaterial({ color: color });
+        const cyl = new THREE.Mesh(geometry, material);
+
+        cyl.position.copy(mid);
+        // Align cylinder (default Y-axis) to direction
+        const axis = new THREE.Vector3(0, 1, 0);
+        const quat = new THREE.Quaternion().setFromUnitVectors(axis, dir.normalize());
+        cyl.setRotationFromQuaternion(quat);
+
+        return cyl;
     }
 
     initTesseractVertices() {
@@ -230,55 +253,32 @@ class TesseractVisualizer {
     }
 
     createTesseractWireframe() {
-        // Create tesseract wireframe with all edges bold and black
-        // Outer cube edges
-        const outerMaterial = new THREE.LineBasicMaterial({ color: 0x000000, linewidth: 24 });
-        const outerEdges = [
+        // All tesseract edges as cylinders for consistent visibility
+        const wireframeRadius = 0.015;
+        const wireframeColor = 0x333333;
+
+        const allEdges = [
+            // Outer cube
             [0, 1], [1, 2], [2, 3], [3, 0],
             [4, 5], [5, 6], [6, 7], [7, 4],
-            [0, 4], [1, 5], [2, 6], [3, 7]
-        ];
-
-        outerEdges.forEach(([i, j]) => {
-            const geometry = new THREE.BufferGeometry().setFromPoints([
-                new THREE.Vector3(...this.tesseractVertices[i]),
-                new THREE.Vector3(...this.tesseractVertices[j])
-            ]);
-            const line = new THREE.Line(geometry, outerMaterial);
-            this.tesseractGroup.add(line);
-        });
-
-        // Inner cube edges (bold black)
-        const innerMaterial = new THREE.LineBasicMaterial({ color: 0x000000, linewidth: 24 });
-        const innerEdges = [
+            [0, 4], [1, 5], [2, 6], [3, 7],
+            // Inner cube
             [8, 9], [9, 10], [10, 11], [11, 8],
             [12, 13], [13, 14], [14, 15], [15, 12],
-            [8, 12], [9, 13], [10, 14], [11, 15]
-        ];
-
-        innerEdges.forEach(([i, j]) => {
-            const geometry = new THREE.BufferGeometry().setFromPoints([
-                new THREE.Vector3(...this.tesseractVertices[i]),
-                new THREE.Vector3(...this.tesseractVertices[j])
-            ]);
-            const line = new THREE.Line(geometry, innerMaterial);
-            this.tesseractGroup.add(line);
-        });
-
-        // Connecting edges (bold black)
-        const connectingMaterial = new THREE.LineBasicMaterial({ color: 0x000000, linewidth: 24 });
-        const connectingEdges = [
+            [8, 12], [9, 13], [10, 14], [11, 15],
+            // Connecting edges
             [0, 8], [1, 9], [2, 10], [3, 11],
             [4, 12], [5, 13], [6, 14], [7, 15]
         ];
 
-        connectingEdges.forEach(([i, j]) => {
-            const geometry = new THREE.BufferGeometry().setFromPoints([
-                new THREE.Vector3(...this.tesseractVertices[i]),
-                new THREE.Vector3(...this.tesseractVertices[j])
-            ]);
-            const line = new THREE.Line(geometry, connectingMaterial);
-            this.tesseractGroup.add(line);
+        allEdges.forEach(([i, j]) => {
+            const cyl = this.createThickEdge(
+                this.tesseractVertices[i],
+                this.tesseractVertices[j],
+                wireframeRadius,
+                wireframeColor
+            );
+            this.tesseractGroup.add(cyl);
         });
 
         // Add vertex labels
@@ -543,18 +543,23 @@ class TesseractVisualizer {
         const face = new THREE.Mesh(geometry, material);
         this.tesseractGroup.add(face);
 
-        // Add border manually (4 outer edges, no diagonal)
-        const borderGeo = new THREE.BufferGeometry();
-        const borderPos = new Float32Array([
-            ...vertices[0], ...vertices[1],
-            ...vertices[1], ...vertices[2],
-            ...vertices[2], ...vertices[3],
-            ...vertices[3], ...vertices[0]
-        ]);
-        borderGeo.setAttribute('position', new THREE.BufferAttribute(borderPos, 3));
-        const edgesMat = new THREE.LineBasicMaterial({ color: 0x000000, linewidth: 24 });
-        const edges = new THREE.LineSegments(borderGeo, edgesMat);
-        this.tesseractGroup.add(edges);
+        // Fade previous highlight edges back to black
+        this.lastAddedEdges.forEach(edge => {
+            edge.material.color.setHex(0x000000);
+        });
+
+        // Add thick cylinder-based borders (visible at any scale)
+        const edgeRadius = 0.02;
+        const highlightColor = 0xff6600; // orange for newest face
+        const newEdges = [];
+        const edgePairs = [[0,1],[1,2],[2,3],[3,0]];
+        edgePairs.forEach(([a, b]) => {
+            const cyl = this.createThickEdge(vertices[a], vertices[b], edgeRadius, highlightColor);
+            this.tesseractGroup.add(cyl);
+            newEdges.push(cyl);
+        });
+
+        this.lastAddedEdges = newEdges;
     }
 
     animate() {
