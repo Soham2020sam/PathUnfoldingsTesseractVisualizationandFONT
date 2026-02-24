@@ -17,7 +17,7 @@ class TesseractVisualizer {
         this.animationProgress = 0;
         this.isAnimating = false;
         this.showLabels = true;
-        this.animationSpeed = 0.01;
+        this.animationSpeed = 0.001;
 
         this.cameraAngleX = 0.0;
         this.cameraAngleY = 0.0;
