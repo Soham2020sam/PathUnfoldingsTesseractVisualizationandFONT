@@ -201,7 +201,7 @@ class TesseractApp {
 
         this.speedSlider.addEventListener('input', (e) => {
             const sliderValue = parseFloat(e.target.value);
-            const speed = sliderValue / 10000; // Halved so 1.0x display feels natural
+            const speed = sliderValue / 7000; // Balanced speed
             const displaySpeed = sliderValue / 10; // Display shows normal values
             this.speedValue.textContent = `${displaySpeed.toFixed(1)}x`;
             if (this.visualizer) {

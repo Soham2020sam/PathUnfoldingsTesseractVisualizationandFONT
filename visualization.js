@@ -17,7 +17,7 @@ class TesseractVisualizer {
         this.animationProgress = 0;
         this.isAnimating = false;
         this.showLabels = true;
-        this.animationSpeed = 0.001;
+        this.animationSpeed = 0.0014;
 
         this.cameraAngleX = 0.0;
         this.cameraAngleY = 0.0;
@@ -321,12 +321,12 @@ class TesseractVisualizer {
             const sprite = new THREE.Sprite(spriteMaterial);
             sprite.renderOrder = 999; // Render after everything else
 
-            // Position label slightly offset from vertex for better visibility
+            // Position label offset from vertex to avoid overlapping edges
             const vx = this.tesseractVertices[idx][0];
             const vy = this.tesseractVertices[idx][1];
             const vz = this.tesseractVertices[idx][2];
-            sprite.position.set(vx * 1.2, vy * 1.2, vz * 1.2);
-            sprite.scale.set(0.2, 0.2, 1);
+            sprite.position.set(vx * 1.35, vy * 1.35 + 0.12, vz * 1.35);
+            sprite.scale.set(0.25, 0.25, 1);
 
             this.tesseractGroup.add(sprite);
         });
